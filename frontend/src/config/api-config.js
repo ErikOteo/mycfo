@@ -6,7 +6,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL //|| 'http://localhost:8090';
 
 const API_CONFIG = {
   // URLs construidas a partir de la base
-  ADMINISTRACION: `${BASE_URL}/administracion`,
+  ADMINISTRACION: `${BASE_URL}`,
   CONSOLIDACION: `${BASE_URL}/consolidacion`,
   IA: `${BASE_URL}/ia`,
   NOTIFICACION: `${BASE_URL}/notificacion`,
