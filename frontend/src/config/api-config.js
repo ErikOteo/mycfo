@@ -9,7 +9,7 @@ const API_CONFIG = {
   ADMINISTRACION: `${BASE_URL}`,
   CONSOLIDACION: `${BASE_URL}/consolidacion`,
   IA: `${BASE_URL}/ia`,
-  NOTIFICACION: `${BASE_URL}/notificacion`,
+  NOTIFICACION: "https://notificacion-production.up.railway.app",
   PRONOSTICO: `${BASE_URL}/pronostico`,
   REGISTRO: `${BASE_URL}/registro`,
   REPORTE: `${BASE_URL}/reporte`,
