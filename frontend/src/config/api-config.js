@@ -11,7 +11,7 @@ const API_CONFIG = {
   IA: `${BASE_URL}/ia`,
   NOTIFICACION: "https://notificacion-production.up.railway.app",
   PRONOSTICO: `${BASE_URL}/pronostico`,
-  REGISTRO: `${BASE_URL}/registro`,
+  REGISTRO: "https://registro-production-8fdb.up.railway.app",
   REPORTE: `${BASE_URL}/reporte`,
   FORECAST: `${BASE_URL}/forecast`,
   
