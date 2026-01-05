@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Martin-Fedorenko.github.io/mycfo",
+  "homepage": "/",
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.891.0",
     "@emotion/react": "^11.14.0",
