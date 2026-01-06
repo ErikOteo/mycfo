@@ -2,10 +2,10 @@ package notificacion;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@EnableScheduling
+@ComponentScan(basePackages = {"notificacion", "notificacion.config", "notificacion.controllers", "notificacion.services"})
 public class NotificacionApplication {
 
 	public static void main(String[] args) {
