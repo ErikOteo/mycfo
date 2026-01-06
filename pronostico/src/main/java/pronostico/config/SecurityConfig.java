@@ -1,17 +1,15 @@
 package pronostico.config;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,44 +21,48 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Desactivamos el CORS de Spring Security porque usamos el filtro manual de abajo
-            .cors(cors -> cors.disable()) 
+            // 1. Activar CORS usando el Bean definido abajo
+            .cors(Customizer.withDefaults())
+            
+            // 2. Desactivar CSRF
             .csrf(csrf -> csrf.disable())
+            
+            // 3. Stateless
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // 4. Rutas
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Dejar pasar OPTIONS
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Por si acaso
                 .requestMatchers("/actuator/**", "/public/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt());
+            
+            // 5. OAuth2
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();
     }
 
-    // 🔥 ESTA ES LA CLAVE: Filtro CORS con PRIORIDAD MÁXIMA
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Permitir TODOS los orígenes para testear (luego lo restringimos si querés)
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        
+        // Permitir TODOS los headers
+        configuration.setAllowedHeaders(List.of("*"));
+        
+        // Permitir credenciales
+        configuration.setAllowCredentials(true);
+        
+        // Exponer headers
+        configuration.setExposedHeaders(List.of("Authorization", "X-Total-Count"));
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        
-        config.setAllowCredentials(true);
-        // Permitir explícitamente tus dominios
-        config.setAllowedOriginPatterns(List.of(
-            "https://mycfoar.netlify.app", 
-            "http://localhost:3000", 
-            "https://*.netlify.app"
-        ));
-        
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Usuario-Sub", "X-Organizacion-Id"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        
-        source.registerCorsConfiguration("/**", config);
-        
-        CorsFilter filter = new CorsFilter(source);
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
-        
-        // Le decimos a Spring: "Ejecutá esto ANTES que cualquier seguridad"
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
