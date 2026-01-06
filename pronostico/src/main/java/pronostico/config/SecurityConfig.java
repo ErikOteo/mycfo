@@ -1,17 +1,14 @@
 package pronostico.config;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,46 +20,56 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.disable()) // Desactivamos el CORS de Security porque usamos el filtro manual abajo
+            // 1. APLICAR CORS NATIVO AQUI MISMO
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            
+            // 2. DESACTIVAR CSRF (No necesario para APIs REST con JWT)
             .csrf(csrf -> csrf.disable())
+            
+            // 3. STATELESS (No guardar sesiones en memoria)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // 4. REGLAS DE AUTORIZACION
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Dejar pasar OPTIONS
-                .requestMatchers("/actuator/**").permitAll()
+                // Permitir OPTIONS explícitamente (Preflight requests)
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                // Permitir health checks
+                .requestMatchers("/actuator/**", "/public/**").permitAll()
+                // Todo lo demás requiere autenticación
                 .anyRequest().authenticated()
             )
+            
+            // 5. VALIDAR EL TOKEN JWT
             .oauth2ResourceServer(oauth2 -> oauth2.jwt());
 
         return http.build();
     }
 
-    // 🔥 LA OPCIÓN NUCLEAR: Filtro de CORS con Prioridad Máxima
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
         
-        // Permitir credenciales (cookies/tokens)
-        config.setAllowCredentials(true);
-        
-        // Permitir tu frontend y localhost
-        config.setAllowedOriginPatterns(List.of(
-            "https://mycfoar.netlify.app", 
-            "http://localhost:3000", 
+        // PERMITIR ORÍGENES (Tu Netlify y Localhost)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "https://mycfoar.netlify.app",
+            "http://localhost:3000",
             "https://*.netlify.app"
         ));
         
-        // Permitir todo lo demás
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Usuario-Sub", "X-Organizacion-Id"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // PERMITIR MÉTODOS
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
         
-        source.registerCorsConfiguration("/**", config);
+        // PERMITIR HEADERS (Importante: Authorization y X-Usuario-Sub)
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Usuario-Sub", "X-Organizacion-Id"));
         
-        CorsFilter filter = new CorsFilter(source);
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(filter);
+        // PERMITIR CREDENCIALES
+        configuration.setAllowCredentials(true);
         
-        // ESTO ES LA CLAVE: Le decimos que se ejecute ANTES que Spring Security
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
+        // Exponer headers si fuera necesario
+        configuration.addExposedHeader("Authorization");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
