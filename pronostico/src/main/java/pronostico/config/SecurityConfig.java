@@ -32,6 +32,7 @@ public class SecurityConfig {
             
             // 4. Rutas
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/**")).permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Por si acaso
                 .requestMatchers("/actuator/**", "/public/**").permitAll()
                 .anyRequest().authenticated()
