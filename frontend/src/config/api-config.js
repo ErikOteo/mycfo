@@ -6,13 +6,13 @@ const BASE_URL = process.env.REACT_APP_BASE_URL //|| 'http://localhost:8090';
 
 const API_CONFIG = {
   // URLs construidas a partir de la base
-  ADMINISTRACION: `${BASE_URL}`,
+  ADMINISTRACION: "https://mycfo-production.up.railway.app/",
   CONSOLIDACION: `${BASE_URL}/consolidacion`,
-  IA: `${BASE_URL}/ia`,
+  IA: "https://ia-production-e0b1.up.railway.app/",
   NOTIFICACION: "https://notificacion-production.up.railway.app",
-  PRONOSTICO: `${BASE_URL}/pronostico`,
+  PRONOSTICO: "https://pronostico-production.up.railway.app",
   REGISTRO: "https://registro-production-8fdb.up.railway.app",
-  REPORTE: `${BASE_URL}/reporte`,
+  REPORTE: "https://reporte-production-e413.up.railway.app/",
   FORECAST: `${BASE_URL}/forecast`,
   
   // WebSocket: convierte http/https a ws/wss
