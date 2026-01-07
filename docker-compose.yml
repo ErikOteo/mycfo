@@ -192,7 +192,29 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - mycfo_network
-
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_BASE_URL: http://4.206.176.204
+        REACT_APP_URL_ADMINISTRACION: http://4.206.176.204:8081
+        REACT_APP_URL_IA: http://4.206.176.204:8083
+        REACT_APP_URL_NOTIFICACION: http://4.206.176.204:8084
+        REACT_APP_URL_PRONOSTICO: http://4.206.176.204:8085
+        REACT_APP_URL_REGISTRO: http://4.206.176.204:8086
+        REACT_APP_URL_REPORTE: http://4.206.176.204:8087
+        REACT_APP_WEBSOCKET_URL: http://4.206.176.204:8084/ws
+        REACT_APP_COGNITO_USER_POOL_ID: sa-east-1_lTMNrWW7R
+        REACT_APP_COGNITO_CLIENT_ID: 3ksssqtg3r49rf6js1t1177hrd
+        REACT_APP_AWS_REGION: sa-east-1
+    ports:
+      - "80:80"
+    depends_on:
+      - administracion
+      - registro
+    networks:
+      - mycfo_network
 volumes:
   mysql_data:
 
